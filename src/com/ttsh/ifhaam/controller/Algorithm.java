@@ -20,7 +20,8 @@ import com.ttsh.ifhaam.models.TimeTable;
  */
 public class Algorithm {
     private static double uniformRate = 0.5;
-    private static double mutationRate = 0.0015;
+    private static double mutationRate = 0.0015;//THIS AMOUNT WORKED BETTER WITH TRIAL 0.0015(
+    //aROUND ten times better
     private static int tournamentsize = 5;
     private static TimeTable target;
     public static boolean elitism = true;
