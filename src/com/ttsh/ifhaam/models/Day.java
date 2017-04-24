@@ -5,7 +5,11 @@
  */
 package com.ttsh.ifhaam.models;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.logging.SimpleFormatter;
 
 /**
  *
@@ -13,13 +17,13 @@ import java.util.ArrayList;
  */
 public class Day {
     private ArrayList<TimeSlot>  timeSlots;
-    private String date;
+    private Date date;
 
-    public Day(String date) {
+    public Day(Date date) {
         this.date = date;
     }
 
-    public Day(ArrayList<TimeSlot> timeSlots, String date) {
+    public Day(ArrayList<TimeSlot> timeSlots, Date date) {
         this.timeSlots = new ArrayList<>();
        // this.timeSlots = (ArrayList)timeSlots.clone();
         for(TimeSlot slot :timeSlots){
@@ -41,10 +45,16 @@ public class Day {
     }
 
     public String getDate() {
-        return date;
+        SimpleDateFormat formatter;
+        String pattern = "EEE, MMM d, ''yy";
+        formatter = new SimpleDateFormat(pattern);
+        
+        String output = formatter.format(date);
+        
+        return output;
     }
 
-    public void setDate(String date) {
+    public void setDate(Date date) {
         this.date = date;
     }
     

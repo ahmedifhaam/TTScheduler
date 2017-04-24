@@ -18,7 +18,7 @@ import com.ttsh.ifhaam.models.TimeTable;
  * @author Ahmed
  */
 public class TimeTableManager {
-    private String[] dates;//these are the dates 
+    private Date[] dates;//these are the dates 
     private String[] timeSlotsHeadings;//these are the name of the time slots where timeSlots will be intialized form this 
     private ArrayList<ClassRoom> classRooms;//this array will be cloned and created for all the time slots
     private ArrayList<TimeSlot> timeSlots;//this timeslots will be added to all the days 
@@ -65,8 +65,8 @@ public class TimeTableManager {
                 )return null; //on error this will return null;
         //System.out.println("create tt");
         TimeTable tt = new TimeTable();
-        for(String date :dates){
-           tt.addDay(new Day(timeSlots,date.toString() ));
+        for(Date date :dates){
+           tt.addDay(new Day(timeSlots,date));
         }
         
         return tt;
@@ -76,7 +76,7 @@ public class TimeTableManager {
     // where this will ignore weekends and create daysCount days from startingDate
     public void setDates(Date startingDate,int dayscount){
         Calendar cal = Calendar.getInstance();
-        dates = new String[dayscount];
+        dates = new Date[dayscount];
         cal.setTime(startingDate);
         for(int i=0;i<dayscount;){
             if((cal.get(Calendar.DAY_OF_WEEK )==Calendar.SUNDAY)||(cal.get(Calendar.DAY_OF_WEEK )==Calendar.SATURDAY)) {
@@ -86,7 +86,7 @@ public class TimeTableManager {
                 //System.out.println(Calendar.SATURDAY);
                 //System.out.println("");
             }else{
-                dates[i] = cal.getTime().toString();
+                dates[i] = cal.getTime();
                 cal.add(Calendar.DAY_OF_MONTH, 1);
                 i++;
             }
@@ -97,11 +97,12 @@ public class TimeTableManager {
    
     //this will initalize following dates and help craete time table from that days;
     public void setDates(Date[] dates){
+        /*
         String[] datestemp = new String[dates.length];
         for(int i=0;i<dates.length;i++){
             datestemp[i] = dates[i].toString();
-        }
-        this.dates=datestemp;
+        }*/
+        this.dates=dates;
     }
     
     public void setTimeSlotHeadings(String[] timeSlotHeadings){
