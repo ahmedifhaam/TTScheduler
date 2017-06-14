@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import com.ttsh.ifhaam.models.ClassRoom;
+import com.ttsh.ifhaam.models.Constraints.SameStudentConstraint;
 import com.ttsh.ifhaam.models.Day;
 import com.ttsh.ifhaam.models.TimeSlot;
 import com.ttsh.ifhaam.models.TimeTable;
@@ -22,13 +23,25 @@ public class TimeTableManager {
     private String[] timeSlotsHeadings;//these are the name of the time slots where timeSlots will be intialized form this 
     private ArrayList<ClassRoom> classRooms;//this array will be cloned and created for all the time slots
     private ArrayList<TimeSlot> timeSlots;//this timeslots will be added to all the days 
-    
+    private static TimeTableManager  instance;
     
     //this method will add classroomscount number of classrooms to the array
     //all classrooms created with this method will have a fixed size of 10 
     //=------------------------------------------------------------------
     //this method has to be changed to add roooms those are customized by the user
     //=-------------------------------------------------------------------------
+    
+    public static TimeTableManager getInstance(){
+        if(instance==null){
+            instance = new TimeTableManager ();
+        }
+        return instance;
+    }
+    
+    private TimeTableManager(){
+        
+    }
+    
     public void loadClasses(int classroomscount){
         classRooms = new ArrayList<>();
         //create an ArrayWith classRoom
@@ -40,7 +53,7 @@ public class TimeTableManager {
     
     
     //this room will add a class room passed by the user to the array where user can controll all the data of that class;
-    public void addClassRoom(ClassRoom classroom){
+    private void addClassRoom(ClassRoom classroom){
         classRooms.add(classroom);
     }
     
@@ -57,18 +70,25 @@ public class TimeTableManager {
     //adding all the classrooms to the 
     public TimeTable getTimeTable(){
         initTimeSlots();
+        System.out.println("Dates Size"+dates.length);
         //System.out.println("timslots init");
         if((dates==null || dates.length==0)||
                 (timeSlotsHeadings==null || !(timeSlotsHeadings.length>0))||
                 (classRooms==null||!(classRooms.size()>0))||
                 (timeSlots==null ||!(timeSlots.size()>0))
-                )return null; //on error this will return null;
+                ){
+            System.out.println(dates.length+"");
+            System.out.println("Check here");
+            return null;
+            
+        } //on error this will return null;
         //System.out.println("create tt");
         TimeTable tt = new TimeTable();
         for(Date date :dates){
            tt.addDay(new Day(timeSlots,date));
         }
-        
+        //System.out.println("DaysCount "+tt.countDays());
+        tt.addConstraint(new SameStudentConstraint());
         return tt;
     }
     
@@ -96,7 +116,7 @@ public class TimeTableManager {
     }
    
     //this will initalize following dates and help craete time table from that days;
-    public void setDates(Date[] dates){
+    private void setDates(Date[] dates){
         /*
         String[] datestemp = new String[dates.length];
         for(int i=0;i<dates.length;i++){
@@ -107,5 +127,9 @@ public class TimeTableManager {
     
     public void setTimeSlotHeadings(String[] timeSlotHeadings){
         this.timeSlotsHeadings = timeSlotHeadings;
+    }
+    
+    public void setClassRooms(ArrayList<ClassRoom> classRooms){
+        this.classRooms = classRooms;
     }
 }

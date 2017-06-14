@@ -1,4 +1,4 @@
-/*
+    /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -33,6 +33,7 @@ public class TimeSlot {
         this.classRooms = (ArrayList<ClassRoom>)classRooms.clone();
     }
     
+    /*
     public boolean addSubject(Subject subject){
         int selectedRoom = -1; 
         while (true){
@@ -43,6 +44,17 @@ public class TimeSlot {
         }
         return classRooms.get(selectedRoom).addSubject(subject);
         
+    }*/
+    
+    public boolean addExam(Exam exam){
+        int selectedRoom = -1;
+        while(true){
+            selectedRoom = (int)Math.floor(Math.random()*classRooms.size());
+            if(!classRooms.get(selectedRoom).isOccupied()){
+                break;
+            }
+        }
+        return classRooms.get(selectedRoom).setExam(exam);
     }
 
     public String getIdentifier() {

@@ -43,7 +43,8 @@ public class Main extends javax.swing.JFrame {
         
         @Override
         public int getRowCount() {
-            return ((tt.getDays().get(0).getTimeSlots().get(0).getClassRooms().size())*tt.getDays().get(0).getTimeSlots().size())+tt.getDays().get(0).getTimeSlots().size();
+            //return ((tt.getDays().get(0).getTimeSlots().get(0).getClassRooms().size())*tt.getDays().get(0).getTimeSlots().size())+tt.getDays().get(0).getTimeSlots().size();
+            return (tt.getDays().get(0).getTimeSlots().get(0).getClassRooms().size()+1)*tt.getDays().get(0).getTimeSlots().size();
         }
 
         @Override
@@ -55,12 +56,14 @@ public class Main extends javax.swing.JFrame {
 
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
-            int timeSlot = (int) rowIndex/(tt.getDay(columnIndex).getTimeSlots().size()+2);
-            int classRoom = (int) rowIndex%(tt.getDay(columnIndex).getTimeSlots().size()+2);
+            //int timeSlot = (int) rowIndex/(tt.getDay(columnIndex).getTimeSlots().size()+2);
+            //int classRoom = (int) rowIndex%(tt.getDay(columnIndex).getTimeSlots().size()+2);
+            int timeSlot = (int) rowIndex/(tt.getDay(columnIndex).getTimeSlots().get(0).getClassRooms().size()+1);
+            int classRoom = (int) rowIndex%(tt.getDay(columnIndex).getTimeSlots().get(0).getClassRooms().size()+1);
             //System.out.println(""+timeSlot +"-"+classRoom);
             //return tt.getSubject(columnIndex, timeSlot, classRoom);
             
-            
+            //System.out.println("timeSlot "+timeSlot+" classRoom "+classRoom);
             if(classRoom==0){
                 return tt.getDay(columnIndex).getTimeSlots().get(timeSlot).getIdentifier();
             }else{
@@ -84,11 +87,33 @@ public class Main extends javax.swing.JFrame {
         }
     
     }
+    
+    public Main(Population population){
+        initComponents();
+        this.setTitle("Examination Time Table Scheduler for University of Kelaniya");
+        this.pop = population;
+        cmbTimeTableList.removeAllItems();
+        int i=0;
+        while(i<pop.size()){
+            cmbTimeTableList.addItem("Time Table "+ (i+1));
+            if(pop.getTimeTable(i)==null)System.out.println("Null time table"+i);
+            i++;
+        }
+        cmbTimeTableList.addItemListener(new ItemListener(){
+            @Override
+            public void itemStateChanged(ItemEvent e){
+                jTable1.setModel(new CustomeTableModel(pop.getTimeTable(cmbTimeTableList.getSelectedIndex())));
+                lblCurFitVal.setText(Algorithm.calculateFitness(pop.getTimeTable(cmbTimeTableList.getSelectedIndex()))+"");
+            }
+        });
+    }
+    
     public Main() {
         initComponents();
         this.setTitle("Examination Time Table Scheduler for University of Kelaniya");
-        pop = new Population( 3,true);//initial population
+        //pop = new Population( 3,true);//initial population
         cmbTimeTableList.removeAllItems();
+        
         int i=0;
         while(i<pop.size()){
             cmbTimeTableList.addItem("TimeTable "+(i+1));
@@ -98,6 +123,7 @@ public class Main extends javax.swing.JFrame {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 jTable1.setModel(new CustomeTableModel(pop.getTimeTable(cmbTimeTableList.getSelectedIndex())));
+                lblCurFitVal.setText(Algorithm.calculateFitness(pop.getTimeTable(cmbTimeTableList.getSelectedIndex()))+"");
             }
             
         });
@@ -214,6 +240,11 @@ public class Main extends javax.swing.JFrame {
         );
 
         cmbTimeTableList.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        cmbTimeTableList.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmbTimeTableListActionPerformed(evt);
+            }
+        });
 
         btnPre.setText("Previous");
         btnPre.addActionListener(new java.awt.event.ActionListener() {
@@ -325,15 +356,21 @@ public class Main extends javax.swing.JFrame {
         
         @Override
         public Population doInBackground(){
+            System.out.println("Backround processing started");
             int currFitVal= Algorithm.calculateFitness(currentpop.getFittest());
+            System.out.println("calculated "+currFitVal);
+            System.out.println(reqfit);
             while(currFitVal<reqfit){
+                System.out.println("loop started");
                 Algorithm.evolvePop(currentpop);
                 currFitVal = Algorithm.calculateFitness(currentpop.getFittest());
                 curVal.setText(currFitVal+"");
                 publish(currentpop);
-                setProgress(currFitVal);
-                
+                int valToSend =currFitVal/100;
+                setProgress(valToSend);
             }
+            System.out.println("Req :"+reqfit+"  Cur :"+currFitVal);
+            
             return currentpop;
         }
         
@@ -348,6 +385,7 @@ public class Main extends javax.swing.JFrame {
         
         @Override
         public void done(){
+            //System.out.println("came to setting");
             setFittest();
             System.out.println("done");
         }
@@ -355,7 +393,7 @@ public class Main extends javax.swing.JFrame {
     }
     
     private void start(){
-        setTarget();
+        //setTarget();
         if(getRequiredFitness()>0){
             prgBar.setMaximum(requiredFitness);
             int currFitVal= Algorithm.calculateFitness(pop.getFittest());
@@ -373,9 +411,14 @@ public class Main extends javax.swing.JFrame {
     }
     
     private void setFittest(){
+       ///System.out.println("here x");
+        //System.out.println("pop size"+pop.size());
+        if(pop.getFittest()==null)System.out.println("pop returns null here");
         jTable1.setModel(new CustomeTableModel(pop.getFittest()));
+        //System.out.println("Done getting fittest");
     }
     
+    /*
     private void setTarget(){
         TimeTableManager ttMan = new TimeTableManager();
         ttMan = new TimeTableManager();
@@ -389,14 +432,14 @@ public class Main extends javax.swing.JFrame {
         for(int i=0;i<tt.countDays();i++){
             for(int j=0;j<tt.getDay(i).getTimeSlots().size();j++){
                 for(int k=0;k<tt.getDay(i).getTimeSlots().get(j).getClassRooms().size();k++){
-                    tt.setSubject(i, j, k,new Subject(name.charAt(r)+""));
+                    tt.setExam(i, j, k,new Exam(name.charAt(r)+""));
                     r++;
                 }
             }
         }
         
         Algorithm.setTarget(tt);
-    }
+    }*/
     
     private void txtRequiredFitnessValActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtRequiredFitnessValActionPerformed
         // TODO add your handling code here:
@@ -405,20 +448,17 @@ public class Main extends javax.swing.JFrame {
     private void btnStartActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnStartActionPerformed
         // TODO add your handling code here:
         //start();
-        setTarget();
+        //setTarget();
+        
         if(getRequiredFitness()>0){
-            prgBar.setMaximum(requiredFitness);
+            prgBar.setMaximum(requiredFitness/100);
             task = new ProcessTask(lblCurFitVal,requiredFitness,pop);
-            task.addPropertyChangeListener(new PropertyChangeListener(){
-                @Override
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if("progress".equals(evt.getPropertyName())){
-                        prgBar.setValue((Integer)evt.getNewValue());
-                        setFittest();
-                    }
-
+            task.addPropertyChangeListener((PropertyChangeEvent evt1) -> {
+                if ("progress".equals(evt1.getPropertyName())) {
+                    prgBar.setValue((Integer) evt1.getNewValue());
+                    setFittest();
+                    System.out.println("Propert changed ");
                 }
-
             });
             task.execute();
             //btnStop.setEnabled(true);
@@ -451,6 +491,10 @@ public class Main extends javax.swing.JFrame {
             task.cancel(true);
         //}
     }//GEN-LAST:event_btnStopActionPerformed
+
+    private void cmbTimeTableListActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbTimeTableListActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_cmbTimeTableListActionPerformed
 
     /**
      * @param args the command line arguments

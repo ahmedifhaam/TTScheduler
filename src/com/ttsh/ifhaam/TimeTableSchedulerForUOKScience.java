@@ -39,8 +39,9 @@ public class TimeTableSchedulerForUOKScience {
         //System.out.println(pop.getTimeTable(1));
         //System.out.println(pop.getTimeTable(2));
         
-        TimeTableManager ttMan = new TimeTableManager();
-         ttMan = new TimeTableManager();
+        TimeTableManager ttMan = TimeTableManager.getInstance();
+        //TimeTableManager ttMan = new TimeTableManager();
+        // ttMan = new TimeTableManager();
         ttMan.setTimeSlotHeadings(new String[]{"Morning","Evening"});
         ttMan.loadClasses(3);
         ttMan.setDates(Calendar.getInstance().getTime(), 4);
@@ -51,7 +52,7 @@ public class TimeTableSchedulerForUOKScience {
         for(int i=0;i<tt.countDays();i++){
             for(int j=0;j<tt.getDay(i).getTimeSlots().size();j++){
                 for(int k=0;k<tt.getDay(i).getTimeSlots().get(j).getClassRooms().size();k++){
-                    tt.setSubject(i, j, k,new Subject(name.charAt(r)+""));
+                    //tt.setSubject(i, j, k,new Subject(name.charAt(r)+""));
                     r++;
                 }
             }

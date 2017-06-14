@@ -5,6 +5,8 @@
  */
 package com.ttsh.ifhaam.models;
 
+import java.util.Objects;
+
 /**
  *
  * @author Ahmed
@@ -20,6 +22,13 @@ public class Student {
         this.studentsName = studentsName;
         this.degree = degree;
         this.joinedYear = joinedYear;
+    }
+    
+    public Student(String studentsId){
+        this.studentID = studentsId;
+        this.studentsName = "Undefined";
+        this.degree = "Undefined";
+        this.joinedYear = 0;
     }
 
     public String getStudentID() {
@@ -52,6 +61,34 @@ public class Student {
 
     public void setJoinedYear(int joinedYear) {
         this.joinedYear = joinedYear;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 89 * hash + Objects.hashCode(this.studentID);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(this.studentID.equals(((Student)obj).getStudentID())){
+            return true;
+        }
+        
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+       return false;
+        
+    }
+
+    @Override
+    public String toString() {
+        return "Student{" + "studentID=" + studentID + '}';
     }
     
     

@@ -15,13 +15,17 @@ public class ClassRoom {
     private int size;
     private String name;
     private boolean occupied;
-    private Subject assignedSubject;
+    //private Subject assignedSubject;//this is used before substituting with exam for assigning multiple subjects in single room
+    private Exam assignedExam;
+    
     
     public ClassRoom(ClassRoom room){
         this.size = room.getSize();
         this.name = room.getName();
         this.occupied = room.isOccupied();
-        this.assignedSubject = room.getAssignedSubject();
+        //this.assignedSubject = room.getAssignedSubject();
+        this.assignedExam = room.getAssignedExam();
+                
     }
 
     public ClassRoom(int size, String name, boolean occupied) {
@@ -60,6 +64,27 @@ public class ClassRoom {
         this.occupied = occupied;
     }
 
+    public Exam getAssignedExam() {
+        return assignedExam;
+    }
+
+    public void setAssignedExam(Exam assignedExam) {
+        this.assignedExam = assignedExam;
+    }
+
+    public boolean setExam(Exam exam){
+        
+        if(isOccupied()){
+            return false;
+        }else{
+            assignedExam = exam;
+            setOccupied(true);
+            return true;
+        }
+    }
+    
+    
+    /*
     public Subject getAssignedSubject() {
         return assignedSubject;
     }
@@ -79,13 +104,15 @@ public class ClassRoom {
         }
     }
     
+
     public boolean setSubject(Subject subject){
         assignedSubject = subject;
         return true;
     }
+        */
     
     public String toString(){
-        return "ClassRoom : ["+name+"] :"+assignedSubject;
+        return "ClassRoom ( "+ getSize()+ " ): ["+name+"] :"+assignedExam;
     }
 
     @Override
@@ -112,5 +139,8 @@ public class ClassRoom {
         return true;
     }
     
-    
+    public boolean isSitting(Student std){
+        if(assignedExam==null) return false;
+        return assignedExam.isSitting(std);
+    }
 }

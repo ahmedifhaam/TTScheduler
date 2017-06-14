@@ -36,13 +36,22 @@ public class Day {
         return timeSlots;
     }
     
+    public Exam getExam(int timeSlot,int classRoom){
+        return timeSlots.get(timeSlot).getClassRooms().get(classRoom).getAssignedExam();
+    }
+    
+    public boolean setExam(int timeSlot,int classRoom,Exam exam){
+        return timeSlots.get(timeSlot).getClassRooms().get(classRoom).setExam(exam);
+    }
+    
+    /*
     public Subject getSubject(int timeslt,int classrm){
         return timeSlots.get(timeslt).getClassRooms().get(classrm).getAssignedSubject();
     }
     
     public boolean setSubject(int timeslt,int classrm,Subject subject){
         return timeSlots.get(timeslt).getClassRooms().get(classrm).setSubject(subject);
-    }
+    }*/
 
     public String getDate() {
         SimpleDateFormat formatter;
@@ -71,6 +80,7 @@ public class Day {
         return "\nDay { date=" + date + "\n" + timeSlots + "\n}";
     }
     
+    /*
     public boolean addSubject(Subject subject){
         TimeSlot available = null;
         for(TimeSlot slot :timeSlots){
@@ -85,6 +95,20 @@ public class Day {
         
         return false;
                 
+    }*/
+    
+    public boolean addExam(Exam exam){
+        TimeSlot available =null;
+        for(TimeSlot slot :timeSlots){
+            if(!slot.isTimeSlotFull()){
+                available = slot;
+                break;
+            }
+        }
+        if(available != null){
+            return available.addExam(exam);
+        }
+        return false;
     }
     
     public boolean isThereFreeSlot(){

@@ -13,16 +13,17 @@ import java.util.Objects;
  * @author Ahmed
  */
 public class Subject {
-    //INTE 22543
-    //first one year
-    //second semester 
-    // last credit
+    
     private String subjectCode;
     private ArrayList<Student> students;
     private int enrolledYear;// this is the year students have enrolled for the course
     private boolean isRepeat;
     private ClassRoom classroom;
 
+    private int offeredYear;
+    private int offeredSemester;
+    private Module module;
+    
     public ClassRoom getClassroom() {
         return classroom;
     }
@@ -33,7 +34,15 @@ public class Subject {
     
     public Subject(String subjectCode) {
         this.subjectCode = subjectCode;
+        
         isRepeat=false;
+    }
+    
+    public Subject(String subjectCode,int enrolledYear,int offeredYear,int offeredSemester){
+        this.subjectCode = subjectCode;
+        this.enrolledYear = enrolledYear;
+        this.offeredSemester = offeredSemester;
+        this.offeredYear = offeredYear;
     }
     
     public Subject(String subjectCode,Boolean repeat){
@@ -73,13 +82,23 @@ public class Subject {
     public void setIsRepeat(boolean isRepeat) {
         this.isRepeat = isRepeat;
     }
+
+    public Module getModule() {
+        return module;
+    }
+
+    public void setModule(Module module) {
+        this.module = module;
+    }
+    
+    
     
     public int getYear(){
-        return Integer.parseInt(subjectCode.charAt(0)+"");
+        return offeredYear;
     }
     
     public int getSemester(){
-        return Integer.parseInt(subjectCode.charAt(2)+"");
+        return offeredSemester;
     }
     
     public int getCredit(){
@@ -87,6 +106,9 @@ public class Subject {
     }
     
     public void addStudent(Student student){
+        if(students == null) {
+            students = new ArrayList<>();
+        }
         students.add(student);
     }
     
@@ -129,5 +151,10 @@ public class Subject {
         return true;
     }
     
+    public boolean isSitting(Student std){
+        if(students.contains(std))return true;
+        else return false;
+                
+    }
     
 }
