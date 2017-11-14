@@ -44,6 +44,9 @@ public class Day {
         return timeSlots.get(timeSlot).getClassRooms().get(classRoom).setExam(exam);
     }
     
+    public void assignExam(int timeSlot,int classRoom,Exam exam){
+        timeSlots.get(timeSlot).getClassRooms().get(classRoom).setAssignedExam(exam);
+    }
     /*
     public Subject getSubject(int timeslt,int classrm){
         return timeSlots.get(timeslt).getClassRooms().get(classrm).getAssignedSubject();
@@ -53,7 +56,7 @@ public class Day {
         return timeSlots.get(timeslt).getClassRooms().get(classrm).setSubject(subject);
     }*/
 
-    public String getDate() {
+    public String getDateString() {
         SimpleDateFormat formatter;
         String pattern = "EEE, MMM d, ''yy";
         formatter = new SimpleDateFormat(pattern);
@@ -61,6 +64,10 @@ public class Day {
         String output = formatter.format(date);
         
         return output;
+    }
+    
+    public Date getDate(){
+        return date;
     }
 
     public void setDate(Date date) {
@@ -118,5 +125,11 @@ public class Day {
             }
         }
         return false;
+    }
+    
+    public Day clone(){
+        Day day = new Day(this.date);
+        day.timeSlots = (ArrayList<TimeSlot>) this.timeSlots.clone();
+        return day;
     }
 }

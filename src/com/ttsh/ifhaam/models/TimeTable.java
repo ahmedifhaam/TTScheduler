@@ -5,6 +5,7 @@
  */
 package com.ttsh.ifhaam.models;
 
+import com.ttsh.ifhaam.controller.TimeTableManager;
 import com.ttsh.ifhaam.models.Constraints.Constraint;
 import java.util.ArrayList;
 
@@ -15,6 +16,27 @@ public class TimeTable {
     
     private ArrayList<Day> days;
     private ArrayList<Constraint> constraints;
+    
+    private boolean updated;
+    private int fitness;
+
+    public boolean isUpdated() {
+        return updated;
+    }
+
+    public int getFitness() {
+        return fitness;
+    }
+
+    public void setUpdated(boolean isUpdated) {
+        this.updated = isUpdated;
+    }
+
+    public void setFitness(int fitness) {
+        this.fitness = fitness;
+    }
+    
+    
 
     public ArrayList<Constraint> getConstraints() {
         return constraints;
@@ -22,22 +44,28 @@ public class TimeTable {
 
     public void setConstraints(ArrayList<Constraint> constraints) {
         this.constraints = constraints;
+        
     }
     public TimeTable(){
         days = new ArrayList<>();
         constraints = new ArrayList<>();
+        updated =true;
+        fitness = 0;
     }
     
     public void addConstraint(Constraint cont){
         constraints.add(cont);
+        updated = true;
     }
     
     public void addDay (Day day ){
         days.add(day);
+        updated = true;
     }
     
     public int countDays(){
         return days.size();
+        
     }
     
     public Exam getExam (int day,int timeslot,int classrm){
@@ -49,7 +77,27 @@ public class TimeTable {
     }
     
     public boolean setExam(int day,int timeSlt,int classRm,Exam exam){
-        return days.get(day).setExam(timeSlt, classRm, exam);
+        
+        boolean result = days.get(day).setExam(timeSlt, classRm, exam);
+        if(result)updated = true;
+        return result;
+        
+    }
+    
+    public boolean setExam(Position pos,Exam exam){
+        boolean result = days.get(pos.getDay()).setExam(pos.getTimeSlot(), pos.getClassRoom(), exam);
+        updated = result;
+        return result;
+    }
+    
+    public void AssignExam(int day,int timeSlt,int classRm,Exam exam){
+        days.get(day).assignExam(timeSlt, classRm, exam);
+        updated = true;
+    }
+    
+    public void AssignExam(Position pos,Exam exam){
+        days.get(pos.getDay()).assignExam(pos.getTimeSlot(), pos.getClassRoom(), exam);
+        updated = true;
     }
     
     public boolean addExam(Exam exam){
@@ -69,6 +117,7 @@ public class TimeTable {
             selectedDay--;
             if(selectedDay<0) break;
         }
+        if(result)updated = true;
         return result;
     }
     
@@ -100,10 +149,12 @@ public class TimeTable {
     }*/
 
     public Day getDay(int index){
+        //updated = true;
         return days.get(index);
     }
     
     public ArrayList<Day> getDays(){
+        //updated =true;
         return days;
     }
     
@@ -119,6 +170,18 @@ public class TimeTable {
     
     public int subjectCount(){
         return (days.size()* days.get(0).getTimeSlots().size()*days.get(0).getTimeSlots().get(0).getClassRooms().size());
+    }
+    
+    public int getAssignedSubjectsCount(){
+        int total = 0;
+        for(Day d :days){
+            for(TimeSlot s : d.getTimeSlots()){
+                for(ClassRoom cr : s.getClassRooms()){
+                    if(cr.getAssignedExam()!=null)total++;
+                }
+            }
+        }
+        return total;
     }
     
     public boolean contains(Exam exam){
@@ -148,4 +211,17 @@ public class TimeTable {
         return false;
     }*/
     
+    @Override
+    public TimeTable clone() {//throws CloneNotSupportedException{
+        //super.clone();
+        TimeTable tt= TimeTableManager.getInstance().getTimeTable();
+        tt.setConstraints((ArrayList<Constraint>) this.constraints.clone());
+        Position p = new Position(tt);
+        while(!p.isEnd()){
+            tt.AssignExam(p, this.getExam(p));
+            p.next();
+        }
+        //tt.days = (ArrayList<Day>) this.days.clone();
+        return tt;
+    }
 }

@@ -14,12 +14,27 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.util.Calendar;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingWorker;
+import javax.swing.event.TableColumnModelListener;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableColumnModel;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
+import javax.swing.table.DefaultTableColumnModel;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
@@ -29,13 +44,32 @@ public class Main extends javax.swing.JFrame {
     Population pop;
     private int requiredFitness = 0;
     private ProcessTask task;
+    
+    public static int COLUMNWIDTH = 600;
+    
 
     /**
      * Creates new form Main
      */
     
+    private void setTimeTable(TimeTable tt){
+        jTable1.setModel(new CustomeTableModel(tt));
+        int columnCount = jTable1.getModel().getColumnCount();
+        for(int i=0;i<columnCount;i++){
+            jTable1.getColumnModel().getColumn(i).setMinWidth(200);
+            
+        }
+    }
+    
     private class CustomeTableModel extends AbstractTableModel{
         TimeTable tt;
+        
+        
+
+        @Override
+        public Class<?> getColumnClass(int columnIndex) {
+            return super.getColumnClass(columnIndex); //To change body of generated methods, choose Tools | Templates.
+        }
 
         public CustomeTableModel(TimeTable timeTable){
             this.tt = timeTable;
@@ -83,13 +117,28 @@ public class Main extends javax.swing.JFrame {
         
         @Override
         public String getColumnName(int index){
-            return tt.getDay(index).getDate();
+            return tt.getDay(index).getDateString();
         }
     
     }
     
+     private void setUpTablecolumns(){
+        
+         for(int i=0;i<jTable1.getColumnCount();i++){
+             jTable1.getColumnModel().getColumn(i).setPreferredWidth(COLUMNWIDTH);
+             jTable1.getColumnModel().getColumn(i).setMinWidth(COLUMNWIDTH);
+             jTable1.getColumnModel().getColumn(i).setMaxWidth(jTable1.getWidth());
+         }
+        
+            
+    }
+     
+    
+    
     public Main(Population population){
+       
         initComponents();
+        this.setUpTablecolumns();
         this.setTitle("Examination Time Table Scheduler for University of Kelaniya");
         this.pop = population;
         cmbTimeTableList.removeAllItems();
@@ -102,7 +151,8 @@ public class Main extends javax.swing.JFrame {
         cmbTimeTableList.addItemListener(new ItemListener(){
             @Override
             public void itemStateChanged(ItemEvent e){
-                jTable1.setModel(new CustomeTableModel(pop.getTimeTable(cmbTimeTableList.getSelectedIndex())));
+                //jTable1.setModel(new CustomeTableModel(pop.getTimeTable(cmbTimeTableList.getSelectedIndex())));
+                setTimeTable(pop.getTimeTable(cmbTimeTableList.getSelectedIndex()));
                 lblCurFitVal.setText(Algorithm.calculateFitness(pop.getTimeTable(cmbTimeTableList.getSelectedIndex()))+"");
             }
         });
@@ -138,7 +188,7 @@ public class Main extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jScrollPane1 = new javax.swing.JScrollPane();
+        jScrollPane1 = new javax.swing.JScrollPane(jTable1,JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         jTable1 = new javax.swing.JTable();
         jLabel1 = new javax.swing.JLabel();
         txtRequiredFitnessVal = new javax.swing.JTextField();
@@ -167,6 +217,7 @@ public class Main extends javax.swing.JFrame {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
+        jTable1.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
         jScrollPane1.setViewportView(jTable1);
 
         jLabel1.setText("Required Fitness Value");
@@ -199,7 +250,6 @@ public class Main extends javax.swing.JFrame {
         btnStop.setFont(new java.awt.Font("Calibri", 1, 24)); // NOI18N
         btnStop.setText("Stop");
         btnStop.setToolTipText("");
-        btnStop.setEnabled(false);
         btnStop.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnStopActionPerformed(evt);
@@ -208,7 +258,11 @@ public class Main extends javax.swing.JFrame {
 
         btnConfirm.setFont(new java.awt.Font("Calibri", 1, 18)); // NOI18N
         btnConfirm.setText("Confirm");
-        btnConfirm.setEnabled(false);
+        btnConfirm.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnConfirmActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -233,7 +287,7 @@ public class Main extends javax.swing.JFrame {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(btnStop, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(btnConfirm, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(btnStart, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(btnStart, javax.swing.GroupLayout.DEFAULT_SIZE, 77, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(prgBar, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -274,7 +328,6 @@ public class Main extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel1)
@@ -284,7 +337,7 @@ public class Main extends javax.swing.JFrame {
                             .addComponent(lblCurFitVal, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(txtRequiredFitnessVal, javax.swing.GroupLayout.DEFAULT_SIZE, 82, Short.MAX_VALUE))
                         .addGap(18, 18, 18)
-                        .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(cmbTimeTableList, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -292,13 +345,26 @@ public class Main extends javax.swing.JFrame {
                                 .addComponent(btnPre)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(btnNext, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(btnGetFittest, javax.swing.GroupLayout.DEFAULT_SIZE, 135, Short.MAX_VALUE))
-                        .addContainerGap())))
+                            .addComponent(btnGetFittest, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addComponent(jScrollPane1))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(cmbTimeTableList, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(btnPre, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(btnNext, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addGap(18, 18, 18)
+                                .addComponent(btnGetFittest, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
@@ -308,24 +374,12 @@ public class Main extends javax.swing.JFrame {
                                 .addGap(19, 19, 19)
                                 .addComponent(txtRequiredFitnessVal, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(lblCurFitVal, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 17, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(69, 69, 69))
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(cmbTimeTableList, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(btnPre, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(btnNext, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                .addGap(18, 18, 18)
-                                .addComponent(btnGetFittest, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(48, 48, 48)))
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 296, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 17, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(lblCurFitVal, javax.swing.GroupLayout.PREFERRED_SIZE, 67, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 398, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
 
         pack();
@@ -358,16 +412,26 @@ public class Main extends javax.swing.JFrame {
         public Population doInBackground(){
             System.out.println("Backround processing started");
             int currFitVal= Algorithm.calculateFitness(currentpop.getFittest());
-            System.out.println("calculated "+currFitVal);
+            //System.out.println("calculated "+currFitVal);
             System.out.println(reqfit);
-            while(currFitVal<reqfit){
-                System.out.println("loop started");
-                Algorithm.evolvePop(currentpop);
+            //while(currFitVal<reqfit){
+            while(reqfit>currFitVal ){
+                //System.out.println("loop started");
+                //if(Algorithm.DEBUG)currentpop = Algorithm.testEvolutionParams(pop);
+                //else
+                currentpop = Algorithm.evolvePop(currentpop);
                 currFitVal = Algorithm.calculateFitness(currentpop.getFittest());
                 curVal.setText(currFitVal+"");
-                publish(currentpop);
-                int valToSend =currFitVal/100;
+                
+                int valToSend =(int) ((currFitVal/reqfit)*100);
+                if(valToSend<0)valToSend=0;
+                if(valToSend>100)valToSend = 100;
                 setProgress(valToSend);
+                //System.out.println("Req :"+reqfit+"  Cur :"+currFitVal);
+                publish(currentpop);
+                if(isCancelled())break;
+                //out.println("++++++++++++++++++++++++++++++++++++++++++++");
+                //System.out.println("++++++++++++++++++++++++++++++++++++++++++++");
             }
             System.out.println("Req :"+reqfit+"  Cur :"+currFitVal);
             
@@ -389,23 +453,28 @@ public class Main extends javax.swing.JFrame {
             setFittest();
             System.out.println("done");
         }
+
+        private void setProgress(double valToSend) {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
         
     }
     
     private void start(){
         //setTarget();
         if(getRequiredFitness()>0){
-            prgBar.setMaximum(requiredFitness);
-            int currFitVal= Algorithm.calculateFitness(pop.getFittest());
+            //prgBar.setMaximum(requiredFitness);
+            double currFitVal= Algorithm.calculateFitness(pop.getFittest());
             while(currFitVal<requiredFitness){
                 Algorithm.evolvePop(pop);
                 currFitVal = Algorithm.calculateFitness(pop.getFittest());
                 lblCurFitVal.setText(currFitVal+"");
-                prgBar.setValue(currFitVal);
+                prgBar.setValue((int) currFitVal);//this was changed from int to double thats why casted 
+                //but haven't tested since its no longer used
             }
             //System.out.println(pop.getFittest());
              lblCurFitVal.setText(currFitVal+"");
-             prgBar.setValue(currFitVal);
+             prgBar.setValue((int) currFitVal);
                 setFittest();
         }
     }
@@ -413,8 +482,12 @@ public class Main extends javax.swing.JFrame {
     private void setFittest(){
        ///System.out.println("here x");
         //System.out.println("pop size"+pop.size());
+        cmbTimeTableList.setSelectedIndex(0);
+        
         if(pop.getFittest()==null)System.out.println("pop returns null here");
-        jTable1.setModel(new CustomeTableModel(pop.getFittest()));
+        //jTable1.setModel(new CustomeTableModel(pop.getFittest()));
+        setTimeTable(pop.getFittest());
+        lblCurFitVal.setText(Algorithm.calculateFitness(pop.getFittest())+"");
         //System.out.println("Done getting fittest");
     }
     
@@ -451,7 +524,7 @@ public class Main extends javax.swing.JFrame {
         //setTarget();
         
         if(getRequiredFitness()>0){
-            prgBar.setMaximum(requiredFitness/100);
+            prgBar.setMaximum(100);
             task = new ProcessTask(lblCurFitVal,requiredFitness,pop);
             task.addPropertyChangeListener((PropertyChangeEvent evt1) -> {
                 if ("progress".equals(evt1.getPropertyName())) {
@@ -495,6 +568,17 @@ public class Main extends javax.swing.JFrame {
     private void cmbTimeTableListActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbTimeTableListActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_cmbTimeTableListActionPerformed
+
+    private void btnConfirmActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConfirmActionPerformed
+        // TODO add your handling code here:
+        TimeTable ttToWrite = pop.getFittest();
+        if(ttToWrite==null){
+            JOptionPane.showMessageDialog(this, "Invalid TimeTable", "Error", JOptionPane.ABORT);
+        }
+        else {
+            Export ex = new Export(pop.getFittest());
+        }
+    }//GEN-LAST:event_btnConfirmActionPerformed
 
     /**
      * @param args the command line arguments

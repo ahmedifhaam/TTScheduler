@@ -27,6 +27,7 @@ public class TimeTableSchedulerForUOKScience {
      */
     public static void main(String[] args) {
         // TODO code application logic here
+        /*
        Population pop = new Population( 3,true);
        //System.out.println(pop.getTimeTable(0));
        //System.out.println(pop.getTimeTable(1));
@@ -69,7 +70,7 @@ public class TimeTableSchedulerForUOKScience {
             gen++;
             //System.out.println(pop.getFittest());
         }
-        System.out.println(pop.getFittest());
+        System.out.println(pop.getFittest());*/
     }
     
 }

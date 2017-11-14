@@ -14,7 +14,7 @@ import java.util.Objects;
 public class ClassRoom {
     private int size;
     private String name;
-    private boolean occupied;
+    
     //private Subject assignedSubject;//this is used before substituting with exam for assigning multiple subjects in single room
     private Exam assignedExam;
     
@@ -22,23 +22,19 @@ public class ClassRoom {
     public ClassRoom(ClassRoom room){
         this.size = room.getSize();
         this.name = room.getName();
-        this.occupied = room.isOccupied();
+        
         //this.assignedSubject = room.getAssignedSubject();
         this.assignedExam = room.getAssignedExam();
                 
     }
 
-    public ClassRoom(int size, String name, boolean occupied) {
-        this.size = size;
-        this.name = name;
-        this.occupied = occupied;
-    }
-
     public ClassRoom(int size, String name) {
         this.size = size;
         this.name = name;
-        occupied = false;
+        
     }
+
+   
 
     public int getSize() {
         return size;
@@ -56,29 +52,34 @@ public class ClassRoom {
         this.name = name;
     }
 
-    public boolean isOccupied() {
-        return occupied;
-    }
-
-    public void setOccupied(boolean occupied) {
-        this.occupied = occupied;
-    }
-
+    
     public Exam getAssignedExam() {
         return assignedExam;
     }
 
+    /**
+     * This method will replaces the assigned exam instance variable
+     * This wont check it is null or not before assigning
+     * @param assignedExam this will replace assigned exam instance variable
+     * 
+     */
     public void setAssignedExam(Exam assignedExam) {
         this.assignedExam = assignedExam;
     }
 
+    /**
+     * If the assigned Exam instance variable is null this method 
+     * will replace the null value of that variable with the object exam
+     * @param exam the object which will be assigned as the assigned exam variable
+     * @return 
+     */
     public boolean setExam(Exam exam){
         
-        if(isOccupied()){
+        if(getAssignedExam()!=null){
             return false;
         }else{
             assignedExam = exam;
-            setOccupied(true);
+            
             return true;
         }
     }
@@ -112,7 +113,8 @@ public class ClassRoom {
         */
     
     public String toString(){
-        return "ClassRoom ( "+ getSize()+ " ): ["+name+"] :"+assignedExam;
+        //return "CR ( "+ getSize()+ " ): ["+name+"] :"+assignedExam;
+        return name +" : "+assignedExam;
     }
 
     @Override
@@ -129,9 +131,7 @@ public class ClassRoom {
         if (obj == null) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
+        
         final ClassRoom other = (ClassRoom) obj;
         if (!Objects.equals(this.name, other.name)) {
             return false;
@@ -142,5 +142,23 @@ public class ClassRoom {
     public boolean isSitting(Student std){
         if(assignedExam==null) return false;
         return assignedExam.isSitting(std);
+    }
+    
+    public boolean contains(Subject sub){
+        if(assignedExam==null){
+            return false;
+        }else{
+            if(!assignedExam.getSubjects().contains(sub)){
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    @Override
+    public ClassRoom clone(){
+        ClassRoom cr = new ClassRoom(size,name);
+        cr.assignedExam = this.assignedExam.clone();
+        return cr;
     }
 }

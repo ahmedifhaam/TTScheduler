@@ -15,12 +15,18 @@ import java.util.Objects;
 public class Exam {
     private ArrayList<Subject> subjects;
     
+    
     public Exam(){
         subjects = new ArrayList<>();
     }
     public Exam(Subject sbj){
         this();
         addSubject(sbj);
+    }
+    
+    public Exam(ArrayList<Subject> subjects){
+        this();
+        this.subjects = subjects;
     }
     
     //in this method method should check whether the students enrolled for 
@@ -80,5 +86,18 @@ public class Exam {
         return false;
     }
     
+    public int getStudentCount(){
+        int total = 0;
+        for(Subject sbj:subjects){
+            total+=sbj.getStudentsCount();
+        }
+        return total;
+    }
     
+    
+    public Exam clone(){
+        Exam exam = new Exam();
+        exam.subjects = (ArrayList<Subject>) this.subjects.clone();
+        return exam;
+    }
 }

@@ -50,9 +50,10 @@ public class TimeSlot {
         int selectedRoom = -1;
         while(true){
             selectedRoom = (int)Math.floor(Math.random()*classRooms.size());
-            if(!classRooms.get(selectedRoom).isOccupied()){
+            if(classRooms.get(selectedRoom).getAssignedExam()==null){
                 break;
             }
+            
         }
         return classRooms.get(selectedRoom).setExam(exam);
     }
@@ -76,7 +77,7 @@ public class TimeSlot {
     
     public boolean isTimeSlotFull(){
         for(ClassRoom clsRoom:classRooms){
-            if(!clsRoom.isOccupied()){
+            if(clsRoom.getAssignedExam()==null){
                 return false;
             }
         }
@@ -92,4 +93,13 @@ public class TimeSlot {
         outputString+=       "\n-----------------------------------------------\n";
         return outputString;
     }
+    
+    @Override
+    public TimeSlot clone(){
+        TimeSlot timeSlot = new TimeSlot(this.identifier);
+        timeSlot.classRooms = (ArrayList<ClassRoom>) this.classRooms.clone();
+        return timeSlot;
+    }
+    
+    
 }

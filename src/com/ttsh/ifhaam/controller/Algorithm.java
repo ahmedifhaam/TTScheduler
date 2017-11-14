@@ -1,4 +1,4 @@
-/*
+    /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import com.ttsh.ifhaam.models.ClassRoom;
 import com.ttsh.ifhaam.models.Constraints.Constraint;
+import com.ttsh.ifhaam.models.Constraints.Constraint.TYPE;
+import com.ttsh.ifhaam.models.Constraints.HardConstraint;
 import com.ttsh.ifhaam.models.Day;
 import com.ttsh.ifhaam.models.Exam;
 import com.ttsh.ifhaam.models.Population;
@@ -16,23 +18,71 @@ import com.ttsh.ifhaam.models.Position;
 import com.ttsh.ifhaam.models.Subject;
 import com.ttsh.ifhaam.models.TimeSlot;
 import com.ttsh.ifhaam.models.TimeTable;
+import com.ttsh.ifhaam.models.NoBFSException;
 
 /**
  *
  * @author Ahmed
  */
 public class Algorithm {
+    public static final boolean DEBUG = false;
+    
+    
     private static double uniformRate = 0.5;
     private static double mutationRate = 0.0015;//THIS AMOUNT WORKED BETTER WITH TRIAL 0.0015(
     //aROUND ten times better
     private static final int tournamentsize = 5;
     private static TimeTable target;
     public static boolean elitism = true;
+    public static final int POPULATION_SIZE = 30;
     
     private ArrayList<Constraint> Constraints;
     
+    
+    private static int generation= 0;
+    //this method is to test different parameters and find a best one for the solution space
+    /*public static Population testEvolutionParams(Population pop){
+        // //change mutation rate
+        System.out.println("Generation "+generation);
+        Population best = pop;
+        int curbestfit = 0;
+        for(mutationRate=0.0015;mutationRate<0.3;mutationRate+=0.0015){
+            System.out.println("Generation "+generation);
+            System.out.println("Mutation Rate : "+mutationRate);
+            Population p = evolvePop(best.clone());
+            int temp  = getRankofWorst(p.getFittest());
+            if(temp>curbestfit){
+                best= p;
+                curbestfit = temp;
+            }
+        }
+        generation++;
+        
+        return best;
+    }*/
+    
+    public static void intelSwap(TimeTable t1 ){
+        Position p = new Position(t1);
+        Position p2 = new Position(t1);
+                
+        while(!(p.isEnd()|| p2.isEnd())) {
+            Exam exam1 = t1.getExam(p);
+            Exam exam2 = t1.getExam(p2);
+            t1.setExam(p, exam2);
+            t1.setExam(p2, exam1);
+            p.next();
+            p2.next();
+        }
+    }
+    
     public static Population evolvePop(Population pop){
-        Population newPop = new Population();
+        //Population newPop = new Population();
+        Population newPop=null;
+        try{
+            newPop = new Population(POPULATION_SIZE,false);
+        }catch(NoBFSException ex){
+            
+        }
         int elitismOffset =0;
         if(elitism){
             newPop.saveTimeTable(0, pop.getFittest());
@@ -42,14 +92,23 @@ public class Algorithm {
         for(int i = elitismOffset;i<newPop.size();i++){
             TimeTable parent1 = tournamentSelection(pop);
             TimeTable parent2 = tournamentSelection(pop);
+            //parent2= pop.getFittest();
+            //System.out.println("parent1 subjects "+parent1.getAssignedSubjectsCount());
+            //System.out.println("parent2 subjects "+parent2.getAssignedSubjectsCount());
             
             if(parent1==null)System.out.println("parent 1 null");
             if(parent2==null)System.out.println("parent 2 null");
             //crossover parents 
             TimeTable child = null;
             try{
-                child = crossOver(parent1,parent2);
+                child = crossOvert(parent1,parent2);
+                //System.out.println("p 1"+parent1.hashCode() );
+                //System.out.println("p 2"+parent2.hashCode() );
+                
+                //intelSwap(child);
+                //child = crossOvert(parent1,parent2);
                 if(child ==null)System.out.println("child null");
+                //System.out.println("child subjects after crossover "+child.getAssignedSubjectsCount());
             }catch(Exception ex){
                 System.out.println(ex.getMessage());
             }
@@ -59,17 +118,63 @@ public class Algorithm {
         }
         
         //mutate the new population a bit to add some new genetic material
-        for(int i=0;i<newPop.size();i++){
+        for(int i=elitismOffset;i<newPop.size();i++){
             //System.out.println(newPop.getTimeTable(i));
             newPop.saveTimeTable(i, mutate(newPop.getTimeTable(i)));
+            //System.out.println("child subjects after mutation"+(newPop.getTimeTable(i).getAssignedSubjectsCount()));
             //System.out.println(newPop.getTimeTable(i));
         }
         //pop = newPop;
         return newPop;
     }
     
+    //this method worked perfect for the small dataset
+    
+    private static TimeTable crossOvert(TimeTable tt1,TimeTable tt2){
+        int tt1Selection=0;
+        int tt2Selection=0;
+        TimeTableManager ttMan = TimeTableManager.getInstance();
+        TimeTable newtt = ttMan.getTimeTable();
+        Position pos = new Position(newtt);
+        while(!pos.isEnd()){
+            Exam e = tt1.getExam(pos);
+            if(Math.random()<=uniformRate){
+                e = tt2.getExam(pos);
+                
+            }
+            if(!newtt.contains(e)) newtt.setExam(pos,e);
+            pos.next();
+        }
+        //fill the empty slots with the subjects that are not already in newtt
+        for(int i=0;i<tt2.countDays();i++){
+            for(int j=0;j<tt2.getDay(i).getTimeSlots().size();j++){
+                for(int k=0;k<tt2.getDay(i).getTimeSlots().get(j).getClassRooms().size();k++){
+                    //System.out.println("i "+i+" j "+j+" k "+k);
+                    Exam exm = tt2.getExam(i, j, k);
+                    if(!newtt.contains(exm)){
+                            boolean check = true;
+                        for(int x=0;x<tt2.countDays() && check;x++){
+                            for(int y=0;y<tt2.getDay(x).getTimeSlots().size() && check;y++){
+                                for(int z=0;z<tt2.getDay(x).getTimeSlots().get(y).getClassRooms().size() && check;z++){
+                                    if(newtt.getExam(x, y, z) == null){
+                                        newtt.setExam(x, y, z, tt2.getExam(i, j, k));
+                                        check = false;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if(newtt==null)System.out.println("new tt is null");
+        
+        return newtt;
+        
+    }
+    
     //crossover for exam objects
-    public static TimeTable crossOver(TimeTable tt1,TimeTable tt2){
+    private static TimeTable crossOver(TimeTable tt1,TimeTable tt2){
         
         TimeTableManager ttMan = TimeTableManager.getInstance();
         //because of singleton pattern these line become useless
@@ -346,10 +451,14 @@ public class Algorithm {
                         Exam exm = tt.getExam(i, j, k);
                         Exam exm2 = tt.getExam(x,y,z);
                         
+                        tt.AssignExam(x, y, z, exm);
+                        tt.AssignExam(i, j, k, exm2);
+                        
+                        /*
                         if(!(tt.setExam(x, y, z, exm) && (tt.setExam(i, j, k, exm2)))){
                             tt.setExam(x,y,z, exm);
                             tt.setExam(i, j, k, exm2);
-                        }
+                        }*/
                     }
                 }
             }
@@ -391,8 +500,13 @@ public class Algorithm {
     
     public static TimeTable tournamentSelection(Population pop){
         //create a tournament population
-        Population tournament  = new Population(tournamentsize,false);
         
+        Population tournament  = null;//new Population(tournamentsize,false);
+        try{
+            tournament  = new Population(tournamentsize,false);
+        }catch(NoBFSException ex){
+            
+        }
         //for each place in the tournament get a random timetable (individual)aa
         for(int i =0;i<tournamentsize;i++){
             int randomID = (int)(Math.random()*pop.size());
@@ -407,25 +521,40 @@ public class Algorithm {
     }
     
     
-    //this method has to be improved
-    public static int calculateFitness(TimeTable tt){
+    //if all the time tables returned are zero fitness then 
+    //we need to rank them in order to take the best to next level
+    //lesser the returning value better the solution
+    //returning the hard constraints broken
+    public static int getRankofWorst(TimeTable tt){
         if(tt==null)return 0;
-        int fitness=0;
+        int count =0;
         for(int i=0;i<tt.countDays();i++ ){
             for(int k=0;k<tt.getDay(i).getTimeSlots().size();k++){
                 for(int j=0;j<tt.getDay(i).getTimeSlots().get(k).getClassRooms().size();j++){
+                    //here implement class room constraints
                     Exam exm = tt.getExam(i, k, j);
                     if(exm!=null){
                         ArrayList<Subject> subjects = exm.getSubjects();
                         for(Subject sbj:subjects){
-                            for(Constraint con : tt.getConstraints()){
-                                if(con.isApplicableTo(sbj)){
-                                    int retVal = con.calculateFitness(new Position(i,k,j), tt);
-                                    //System.out.println("Fitness :"+fitness+"Change : "+retVal);
-                                    //System.out.println(sbj);
-                                    fitness+= retVal;
-                                    
+                            for(Constraint con : TimeTableManager.getInstance().getConstraints()){
+                                if(con.getType()==TYPE.CONSTRAINT_FOR_ROOM){
+                                    if(con.isApplicableTo(tt.getDay(i).getTimeSlots().get(k).getClassRooms().get(j))){
+                                        double retVal = con.calculateFitness(new Position(i,k,j), tt);
+                                        if(retVal==0 && (con instanceof HardConstraint))count++;
+                                        
+                                    }
+                                }else{
+                                    if(con.isApplicableTo(sbj)){
+                                        double retVal = con.calculateFitness(new Position(i,k,j), tt);
+                                        //System.out.println("Fitness :"+fitness+"Change : "+retVal);
+                                        //System.out.println(sbj);
+                                        if(retVal==0 && (con instanceof HardConstraint)) count++;
+                                        
+
+                                    }
                                 }
+                                
+                                
                             }
 
                         }
@@ -433,8 +562,73 @@ public class Algorithm {
                 }
             }
         }
-        //System.out.println("Fitness :"+fitness);
-         return fitness;
+        return count;
+    }
+    
+    //this method has to be improved
+    public static int calculateFitness(TimeTable tt){
+        //System.out.println("size of constraints "+ TimeTableManager.getInstance().getConstraints().size());
+        //System.out.println("Calculating for "+tt.hashCode());
+         //System.out.println("==============================*");
+        if(tt.isUpdated()){
+            if(tt==null)return 0;
+            int fitness=0;
+            for(int i=0;i<tt.countDays();i++ ){
+                
+                for(int k=0;k<tt.getDay(i).getTimeSlots().size();k++){
+                    for(int j=0;j<tt.getDay(i).getTimeSlots().get(k).getClassRooms().size();j++){
+                        //here implement class room constraints
+                        Exam exm = tt.getExam(i, k, j);
+                        if(exm!=null){
+                            ArrayList<Subject> subjects = exm.getSubjects();
+                            for(Subject sbj:subjects){
+                                //System.out.println("Constraint sizes : "+TimeTableManager.getInstance().getConstraints().size());
+                                for(Constraint con : TimeTableManager.getInstance().getConstraints()){
+                                    if(con.getType()==TYPE.CONSTRAINT_FOR_ROOM){
+                                        if(con.isApplicableTo(tt.getDay(i).getTimeSlots().get(k).getClassRooms().get(j))){
+                                            int retVal = con.calculateFitness(new Position(i,k,j), tt);
+                                            if(retVal==0 && (con instanceof HardConstraint)){
+                                                
+                                                tt.setFitness(0);
+                                                tt.setUpdated(false);
+                                                return 0;
+                                            }else {
+                                                fitness+=retVal;
+                                            }
+                                        }
+                                    }else{
+                                        if(con.isApplicableTo(sbj)){
+                                            int retVal = con.calculateFitness(new Position(i,k,j), tt);
+                                            //System.out.println("Fitness :"+fitness+"Change : "+retVal);
+                                            //System.out.println(sbj);
+                                            if(retVal==0 && (con instanceof HardConstraint)){
+                                                 tt.setFitness(0);
+                                                tt.setUpdated(false);
+                                                return 0;
+                                            }else{
+                                                fitness+= retVal;
+                                            }
+                                            
+
+                                        }
+                                    }
+
+
+                                }
+
+                            }
+                        }
+                    }
+                }
+            }
+             //System.out.println("==============================");
+            tt.setFitness(fitness);
+            tt.setUpdated(false);
+            //System.out.println("Fitness :"+fitness);
+             return fitness;
+        }else{
+            return tt.getFitness();
+        }
         
         /*old test alphabet order one
         for(int i=0;i<target.countDays();i++){

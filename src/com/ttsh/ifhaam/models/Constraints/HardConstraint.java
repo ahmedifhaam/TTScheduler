@@ -5,6 +5,7 @@
  */
 package com.ttsh.ifhaam.models.Constraints;
 
+import com.ttsh.ifhaam.models.Constraints.Constraint.TYPE;
 
 
 /**
@@ -12,15 +13,24 @@ package com.ttsh.ifhaam.models.Constraints;
  * @author Ahmed
  */
 public abstract class HardConstraint extends Constraint{
-    public static final int DEFAULT_HARD_CONSTRAINT_VAL = 40;
+    public static final int DEFAULT_HARD_CONSTRAINT_VAL = 10;
     
     public HardConstraint(){
         super(DEFAULT_HARD_CONSTRAINT_VAL);
     }
     
+    public HardConstraint(TYPE type){
+        super(DEFAULT_HARD_CONSTRAINT_VAL,type);
+        
+    }
+    
+    /*
     public HardConstraint(int val){
         super(val);
-    }
+    }*/
+    
+
+   
     
     
 }

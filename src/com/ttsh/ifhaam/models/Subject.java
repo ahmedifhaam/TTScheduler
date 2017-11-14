@@ -16,7 +16,7 @@ public class Subject {
     
     private String subjectCode;
     private ArrayList<Student> students;
-    private int enrolledYear;// this is the year students have enrolled for the course
+    private int yearWriting;// this is the year students have enrolled for the course
     private boolean isRepeat;
     private ClassRoom classroom;
 
@@ -38,11 +38,19 @@ public class Subject {
         isRepeat=false;
     }
     
-    public Subject(String subjectCode,int enrolledYear,int offeredYear,int offeredSemester){
+    public Subject(String subjectCode,int isRepeat){
+        this(subjectCode);
+        if(isRepeat==1){
+            this.isRepeat = true;
+        }
+    }
+    
+    public Subject(String subjectCode,int yearWriting,int offeredYear,int offeredSemester,int isRepeat){
         this.subjectCode = subjectCode;
-        this.enrolledYear = enrolledYear;
+        this.yearWriting = yearWriting;
         this.offeredSemester = offeredSemester;
         this.offeredYear = offeredYear;
+        this.isRepeat = isRepeat==1?true:false;
     }
     
     public Subject(String subjectCode,Boolean repeat){
@@ -67,12 +75,12 @@ public class Subject {
         this.students = students;
     }
 
-    public int getEnrolledYear() {
-        return enrolledYear;
+    public int getWritingYear() {
+        return yearWriting;
     }
 
-    public void setEnrolledYear(int year) {
-        this.enrolledYear = year;
+    public void setWritingYear(int year) {
+        this.yearWriting = year;
     }
     
     public boolean isIsRepeat() {
@@ -148,6 +156,18 @@ public class Subject {
         if (!Objects.equals(this.subjectCode, other.subjectCode)) {
             return false;
         }
+        if(offeredYear!=other.getYear()){
+            return false;
+        }
+        if(offeredSemester!=other.getSemester()){
+            return false;
+        }
+        if(yearWriting !=other.getWritingYear()){
+            return false;
+        }
+        if(other.isRepeat != this.isRepeat){
+            return false;
+        }
         return true;
     }
     
@@ -155,6 +175,11 @@ public class Subject {
         if(students.contains(std))return true;
         else return false;
                 
+    }
+    
+    public Subject clone(){
+        Subject sbj = new Subject(subjectCode, yearWriting, offeredYear, offeredSemester, isRepeat?1:0);
+        return sbj;
     }
     
 }

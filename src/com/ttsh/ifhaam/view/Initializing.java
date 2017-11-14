@@ -5,15 +5,24 @@
  */
 package com.ttsh.ifhaam.view;
 
+import com.ttsh.ifhaam.controller.Algorithm;
 import com.ttsh.ifhaam.controller.DataBaseController;
+import com.ttsh.ifhaam.controller.TimeTableManager;
 import com.ttsh.ifhaam.models.ClassRoom;
+import com.ttsh.ifhaam.models.ClassRoomListCellRenderer;
+import com.ttsh.ifhaam.models.NoBFSException;
 import com.ttsh.ifhaam.models.Population;
+import java.awt.Color;
+import java.awt.event.ActionEvent;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import javax.swing.DefaultListModel;
+import javax.swing.JLabel;
+import javax.swing.JProgressBar;
+import javax.swing.SwingWorker;
 
 
 /**
@@ -27,6 +36,9 @@ public class Initializing extends javax.swing.JFrame {
      */
     public Initializing() {
         initComponents();
+        refreshClassRooms();
+        selectedClassRoomsList.setCellRenderer(new ClassRoomListCellRenderer());
+        classRoomsList.setCellRenderer(new ClassRoomListCellRenderer());
     }
 
     /**
@@ -48,8 +60,6 @@ public class Initializing extends javax.swing.JFrame {
         btnAddAll = new javax.swing.JButton();
         btnAddSelected = new javax.swing.JButton();
         btnRemoveSelected = new javax.swing.JButton();
-        btnRemoveAll = new javax.swing.JButton();
-        jButton1 = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
         txtDaysCount = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
@@ -62,6 +72,8 @@ public class Initializing extends javax.swing.JFrame {
         btnTimeslotAdd = new javax.swing.JButton();
         btnRemoveTimeSlot = new javax.swing.JButton();
         btnNext = new javax.swing.JButton();
+        prgProcess = new javax.swing.JProgressBar();
+        lblProcessStatus = new javax.swing.JLabel();
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -76,9 +88,9 @@ public class Initializing extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Select class rooms"));
 
-        btnLoadClassRooms.setText("Load Class Rooms");
+        btnLoadClassRooms.setText("Refresh");
         btnLoadClassRooms.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnLoadClassRoomsActionPerformed(evt);
@@ -90,14 +102,25 @@ public class Initializing extends javax.swing.JFrame {
         jScrollPane2.setViewportView(selectedClassRoomsList);
 
         btnAddAll.setText(">>");
+        btnAddAll.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAddAllActionPerformed(evt);
+            }
+        });
 
         btnAddSelected.setText(">");
+        btnAddSelected.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAddSelectedActionPerformed(evt);
+            }
+        });
 
-        btnRemoveSelected.setText("<");
-
-        btnRemoveAll.setText("<<");
-
-        jButton1.setText("Confirm");
+        btnRemoveSelected.setText("Remove Selected");
+        btnRemoveSelected.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnRemoveSelectedActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -105,43 +128,39 @@ public class Initializing extends javax.swing.JFrame {
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 183, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(btnLoadClassRooms, javax.swing.GroupLayout.DEFAULT_SIZE, 183, Short.MAX_VALUE)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
-                .addGap(14, 14, 14)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addComponent(btnAddAll, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(btnAddSelected, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(btnRemoveSelected, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addComponent(btnRemoveAll))
+                    .addComponent(btnAddAll, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnAddSelected, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, 176, Short.MAX_VALUE)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                    .addComponent(btnRemoveSelected, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 176, Short.MAX_VALUE))
                 .addGap(43, 43, 43))
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(131, 131, 131)
+                .addComponent(btnLoadClassRooms, javax.swing.GroupLayout.PREFERRED_SIZE, 183, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap(30, Short.MAX_VALUE)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnLoadClassRooms)
-                    .addComponent(jButton1))
-                .addGap(18, 18, 18)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addComponent(btnLoadClassRooms)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(11, 11, 11)
+                        .addGap(12, 12, 12)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jScrollPane1)
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 157, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(55, 55, 55)
                         .addComponent(btnAddAll)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnAddSelected)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnRemoveSelected)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnRemoveAll)))
-                .addGap(40, 40, 40))
+                        .addComponent(btnAddSelected)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(btnRemoveSelected)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jPanel3.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
@@ -157,8 +176,8 @@ public class Initializing extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jLabel1)
-                .addGap(30, 30, 30)
-                .addComponent(txtDaysCount, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(txtDaysCount, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -177,7 +196,7 @@ public class Initializing extends javax.swing.JFrame {
                 .addContainerGap(13, Short.MAX_VALUE))
         );
 
-        jPanel4.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+        jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder("Enter Time Slots"));
 
         timeSlotsList.setModel(new DefaultListModel());
         jScrollPane3.setViewportView(timeSlotsList);
@@ -203,30 +222,29 @@ public class Initializing extends javax.swing.JFrame {
             .addGroup(jPanel4Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 183, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(txtTimeSlotEnter)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(btnRemoveTimeSlot, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(btnTimeslotAdd, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                        .addComponent(btnTimeslotAdd, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(18, 18, 18)
+                        .addComponent(btnRemoveTimeSlot))
+                    .addComponent(txtTimeSlotEnter, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 183, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel4Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                    .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addComponent(txtTimeSlotEnter, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(btnTimeslotAdd)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnRemoveTimeSlot)
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
+                .addGap(50, 50, 50)
+                .addComponent(txtTimeSlotEnter, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnRemoveTimeSlot)
+                    .addComponent(btnTimeslotAdd))
+                .addGap(0, 0, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
+                .addContainerGap(18, Short.MAX_VALUE)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(15, 15, 15))
         );
 
         btnNext.setText("Next");
@@ -242,42 +260,59 @@ public class Initializing extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(btnNext, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 450, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(prgProcess, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(6, 6, 6)
+                                .addComponent(lblProcessStatus, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addGap(18, 18, 18)
+                        .addComponent(btnNext, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 450, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jPanel4, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel3, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap(26, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(24, 24, 24)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(btnNext, javax.swing.GroupLayout.DEFAULT_SIZE, 33, Short.MAX_VALUE)
-                .addContainerGap())
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btnNext, javax.swing.GroupLayout.DEFAULT_SIZE, 63, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(lblProcessStatus, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(prgProcess, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(16, 16, 16))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void btnLoadClassRoomsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLoadClassRoomsActionPerformed
-        // TODO add your handling code here:
+    private void refreshClassRooms(){
+        selectedClassRoomsList.setModel(new DefaultListModel());
+       
         DataBaseController dbc = DataBaseController.newInstance();
         classRooms = dbc.getClassRooms();
         DefaultListModel<ClassRoom> defaultModel = new DefaultListModel<>();
-        
+        System.out.println("called this method size :"+classRooms.size());
         for(int i =0;i<classRooms.size();i++){
             defaultModel.insertElementAt(classRooms.get(i), i);
             
         }
-        classRoomsList.setModel(defaultModel);
+         classRoomsList.setModel(defaultModel);
+    }
+    
+    private void btnLoadClassRoomsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLoadClassRoomsActionPerformed
+        // TODO add your handling code here:
+        refreshClassRooms();
     }//GEN-LAST:event_btnLoadClassRoomsActionPerformed
 
     private void btnTimeslotAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTimeslotAddActionPerformed
@@ -297,6 +332,9 @@ public class Initializing extends javax.swing.JFrame {
 
     private void btnNextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNextActionPerformed
         // TODO add your handling code here:
+        new InitiateProcess(lblProcessStatus,prgProcess).execute();
+        
+        /*
         List<String> timeSlots = new ArrayList<>();
         for(int i=0;i<timeSlotsList.getModel().getSize();i++){
             timeSlots.add(timeSlotsList.getModel().getElementAt(i));
@@ -306,12 +344,56 @@ public class Initializing extends javax.swing.JFrame {
         Date startingDate = datePicker.getDate();
         System.out.println("Entered Time Slot"+timeSlots.size());
         String[] tempTimeSlotList = timeSlots.toArray(new String[timeSlots.size()]);
-        Population pop = new Population(true,classRooms,tempTimeSlotList,daysCount,startingDate);
+        
+        TimeTableManager ttMan = TimeTableManager.getInstance();
+        ttMan.setTimeSlotHeadings(tempTimeSlotList);
+        
+        ttMan.setClassRooms(classRooms);
+        ttMan.setDates(startingDate,daysCount);
+        /****************************************************************
+        //here i have to call the setExams method of TimeTable Manager 
+        //****************************************************************
+        888888888988888888888888888888888888888888888888888888888888888888*/
+        
+        //Population pop = new Population(true,classRooms,tempTimeSlotList,daysCount,startingDate);
+        /*
+        Population pop = new Population(Algorithm.POPULATION_SIZE,true);
         for(int i=0;i<pop.size();i++){
             if(pop.getTimeTable(i)==null)System.out.println("Initial pop Time Table 1"+"null");
         }
         new Main(pop).setVisible(true);
+        new ConstraintsManager().setVisible(true);*/
     }//GEN-LAST:event_btnNextActionPerformed
+
+    private void btnAddAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddAllActionPerformed
+        // TODO add your handling code here:
+        
+        DefaultListModel selectedListModel = ((DefaultListModel)selectedClassRoomsList.getModel());
+        for(int index=0;index<((DefaultListModel)classRoomsList.getModel()).size();index++){
+            ClassRoom cr = classRoomsList.getModel().getElementAt(index);
+            if(!selectedListModel.contains(cr)) selectedListModel.addElement(cr);
+        }
+    }//GEN-LAST:event_btnAddAllActionPerformed
+
+    private void btnRemoveSelectedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRemoveSelectedActionPerformed
+        // TODO add your handling code here:
+        DefaultListModel selectedListModel = ((DefaultListModel)selectedClassRoomsList.getModel());
+        int[] indices = selectedClassRoomsList.getSelectedIndices();
+        if(indices.length>0){
+            selectedListModel.removeRange(indices[0], indices[indices.length-1]);
+            
+        }
+    }//GEN-LAST:event_btnRemoveSelectedActionPerformed
+
+    private void btnAddSelectedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddSelectedActionPerformed
+        // TODO add your handling code here:
+        DefaultListModel selectedListModel = ((DefaultListModel)selectedClassRoomsList.getModel());
+        int[] indices = classRoomsList.getSelectedIndices();
+        for(int index:indices){
+            ClassRoom cr = classRoomsList.getModel().getElementAt(index);
+            if(!selectedListModel.contains(cr))selectedListModel.addElement(cr);
+        }
+    }//GEN-LAST:event_btnAddSelectedActionPerformed
 
     /**
      * @param args the command line arguments
@@ -347,19 +429,98 @@ public class Initializing extends javax.swing.JFrame {
             }
         });
     }
+    
+    
+    class InitiateProcess extends SwingWorker<Void,Void>{
+        JLabel lblStatus;
+        JProgressBar jBar;
+        Population pop;
+        boolean success =false;
+        
+        InitiateProcess(JLabel status,JProgressBar jBar){
+            super();
+            this.lblStatus = status;
+            this.jBar = jBar;
+            
+        }
+        
+        @Override
+        protected Void doInBackground()  {
+            lblStatus.setForeground(Color.black);
+            lblStatus.setText("Starting process...");
+            lblStatus.setText("Adding TimeSlots...");
+            jBar.setValue(10);
+            List<String> timeSlots = new ArrayList<>();
+            for(int i=0;i<timeSlotsList.getModel().getSize();i++){
+                timeSlots.add(timeSlotsList.getModel().getElementAt(i));
+            }
+            
+            lblStatus.setText("Updating Dates...");
+            jBar.setValue(20);
+            int daysCount = Integer.parseInt(txtDaysCount.getText());
+            Date startingDate = datePicker.getDate();
+            System.out.println("Entered Time Slot"+timeSlots.size());
+            String[] tempTimeSlotList = timeSlots.toArray(new String[timeSlots.size()]);
+
+            lblStatus.setText("Updating TimeSlots...");
+            jBar.setValue(30);
+            TimeTableManager ttMan = TimeTableManager.getInstance();
+            ttMan.setTimeSlotHeadings(tempTimeSlotList);
+
+            lblStatus.setText("Selecting ClassRooms...");
+            jBar.setValue(40);
+            ttMan.setClassRooms(classRooms);
+            ttMan.setDates(startingDate,daysCount);
+            /****************************************************************
+            //here i have to call the setExams method of TimeTable Manager 
+            //****************************************************************
+            888888888988888888888888888888888888888888888888888888888888888888*/
+
+            //Population pop = new Population(true,classRooms,tempTimeSlotList,daysCount,startingDate);
+            lblStatus.setText("creating population...");
+            try{
+                pop = new Population(Algorithm.POPULATION_SIZE,true);
+            }catch(NoBFSException ex){
+                lblStatus.setText("No Posible Solution!!! ");
+                lblStatus.setForeground(Color.red);
+                jBar.setValue(0);
+                return null;
+            }
+            
+            jBar.setValue(90);
+            for(int i=0;i<pop.size();i++){
+                if(pop.getTimeTable(i)==null)System.out.println("Initial pop Time Table 1"+"null");
+            }
+            jBar.setValue(100);
+            lblStatus.setText("Done initiating...");
+            success =true;
+            return null;
+        }
+        
+        @Override
+        public void done(){
+            if(success){
+                new Main(pop).setVisible(true);
+                new ConstraintsManager().setVisible(true);
+                jBar.setValue(0);
+                
+            }
+            
+            
+        }
+    
+    }   
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAddAll;
     private javax.swing.JButton btnAddSelected;
     private javax.swing.JButton btnLoadClassRooms;
     private javax.swing.JButton btnNext;
-    private javax.swing.JButton btnRemoveAll;
     private javax.swing.JButton btnRemoveSelected;
     private javax.swing.JButton btnRemoveTimeSlot;
     private javax.swing.JButton btnTimeslotAdd;
     private javax.swing.JList<ClassRoom> classRoomsList;
     private org.jdesktop.swingx.JXDatePicker datePicker;
-    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
@@ -369,7 +530,9 @@ public class Initializing extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
-    private javax.swing.JList<String> selectedClassRoomsList;
+    private javax.swing.JLabel lblProcessStatus;
+    private javax.swing.JProgressBar prgProcess;
+    private javax.swing.JList<ClassRoom> selectedClassRoomsList;
     private javax.swing.JList<String> timeSlotsList;
     private javax.swing.JTextField txtDaysCount;
     private javax.swing.JTextField txtTimeSlotEnter;

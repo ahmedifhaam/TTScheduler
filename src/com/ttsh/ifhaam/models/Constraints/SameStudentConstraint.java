@@ -34,6 +34,7 @@ public class SameStudentConstraint extends HardConstraint{
             for(Student std : sub.getStudents()){
                 int classRoomsEnd = timeTable.getDay(pos.getDay()).getTimeSlots().get(pos.getTimeSlot()).getClassRooms().size();
                 int classRoomStart = pos.getClassRoom()+1;
+                
                 if(classRoomStart>=classRoomsEnd){//if it is the last classRoom then we dont have to check
                     return getFitness();
                 }
@@ -41,10 +42,12 @@ public class SameStudentConstraint extends HardConstraint{
                     //System.out.println("Strt :"+classRoomStart+"   | classRoom End :"+classRoomsEnd);
                     if(timeTable.getDay(pos.getDay()).getTimeSlots().get(pos.getTimeSlot()).getClassRooms().get(pos.getClassRoom()+i).isSitting(std)){
                         //System.out.println("Hard Cosntraint SAMESTUDENT BROKEN pos :"+pos+" i="+i);
+                        //System.out.println("Student "+std);
                         //System.out.println("Student :"+std);
                         //System.out.println(" Class Room "+timeTable.getDay(pos.getDay()).getTimeSlots().get(pos.getTimeSlot()).getClassRooms().get(pos.getClassRoom()+i));
                         
-                        return getFitness()*(-1);
+                        //return getFitness()*(-1);
+                        return 0;
                     }
                 }
             }
@@ -54,12 +57,22 @@ public class SameStudentConstraint extends HardConstraint{
     }
 
     @Override
-    public boolean isApplicableTo(Subject subject) {
+    public boolean isApplicableTo(Object subject) {
         //Since all the subjects have to succeed this test retturn true for all 
-        return true;
+        if(subject instanceof Subject) return true;
+        else return false;
     }
 
-   
     
+    @Override
+    public boolean equals(Object obj){
+        if(obj == null) return false;
+        if(obj instanceof SameStudentConstraint) return true;
+        else return false;
+    }
     
+    @Override
+    public String toString(){
+        return "Same student cant write two exams at once";
+    }
 }
