@@ -27,6 +27,7 @@ public class TimeTableSchedulerForUOKScience {
      */
     public static void main(String[] args) {
         // TODO code application logic here
+        /*
        Population pop = new Population( 3,true);
        //System.out.println(pop.getTimeTable(0));
        //System.out.println(pop.getTimeTable(1));
@@ -39,8 +40,9 @@ public class TimeTableSchedulerForUOKScience {
         //System.out.println(pop.getTimeTable(1));
         //System.out.println(pop.getTimeTable(2));
         
-        TimeTableManager ttMan = new TimeTableManager();
-         ttMan = new TimeTableManager();
+        TimeTableManager ttMan = TimeTableManager.getInstance();
+        //TimeTableManager ttMan = new TimeTableManager();
+        // ttMan = new TimeTableManager();
         ttMan.setTimeSlotHeadings(new String[]{"Morning","Evening"});
         ttMan.loadClasses(3);
         ttMan.setDates(Calendar.getInstance().getTime(), 4);
@@ -51,7 +53,7 @@ public class TimeTableSchedulerForUOKScience {
         for(int i=0;i<tt.countDays();i++){
             for(int j=0;j<tt.getDay(i).getTimeSlots().size();j++){
                 for(int k=0;k<tt.getDay(i).getTimeSlots().get(j).getClassRooms().size();k++){
-                    tt.setSubject(i, j, k,new Subject(name.charAt(r)+""));
+                    //tt.setSubject(i, j, k,new Subject(name.charAt(r)+""));
                     r++;
                 }
             }
@@ -68,7 +70,7 @@ public class TimeTableSchedulerForUOKScience {
             gen++;
             //System.out.println(pop.getFittest());
         }
-        System.out.println(pop.getFittest());
+        System.out.println(pop.getFittest());*/
     }
     
 }

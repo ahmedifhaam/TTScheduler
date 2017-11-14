@@ -36,15 +36,27 @@ public class Day {
         return timeSlots;
     }
     
+    public Exam getExam(int timeSlot,int classRoom){
+        return timeSlots.get(timeSlot).getClassRooms().get(classRoom).getAssignedExam();
+    }
+    
+    public boolean setExam(int timeSlot,int classRoom,Exam exam){
+        return timeSlots.get(timeSlot).getClassRooms().get(classRoom).setExam(exam);
+    }
+    
+    public void assignExam(int timeSlot,int classRoom,Exam exam){
+        timeSlots.get(timeSlot).getClassRooms().get(classRoom).setAssignedExam(exam);
+    }
+    /*
     public Subject getSubject(int timeslt,int classrm){
         return timeSlots.get(timeslt).getClassRooms().get(classrm).getAssignedSubject();
     }
     
     public boolean setSubject(int timeslt,int classrm,Subject subject){
         return timeSlots.get(timeslt).getClassRooms().get(classrm).setSubject(subject);
-    }
+    }*/
 
-    public String getDate() {
+    public String getDateString() {
         SimpleDateFormat formatter;
         String pattern = "EEE, MMM d, ''yy";
         formatter = new SimpleDateFormat(pattern);
@@ -52,6 +64,10 @@ public class Day {
         String output = formatter.format(date);
         
         return output;
+    }
+    
+    public Date getDate(){
+        return date;
     }
 
     public void setDate(Date date) {
@@ -71,6 +87,7 @@ public class Day {
         return "\nDay { date=" + date + "\n" + timeSlots + "\n}";
     }
     
+    /*
     public boolean addSubject(Subject subject){
         TimeSlot available = null;
         for(TimeSlot slot :timeSlots){
@@ -85,6 +102,20 @@ public class Day {
         
         return false;
                 
+    }*/
+    
+    public boolean addExam(Exam exam){
+        TimeSlot available =null;
+        for(TimeSlot slot :timeSlots){
+            if(!slot.isTimeSlotFull()){
+                available = slot;
+                break;
+            }
+        }
+        if(available != null){
+            return available.addExam(exam);
+        }
+        return false;
     }
     
     public boolean isThereFreeSlot(){
@@ -94,5 +125,11 @@ public class Day {
             }
         }
         return false;
+    }
+    
+    public Day clone(){
+        Day day = new Day(this.date);
+        day.timeSlots = (ArrayList<TimeSlot>) this.timeSlots.clone();
+        return day;
     }
 }

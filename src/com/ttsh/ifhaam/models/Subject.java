@@ -13,16 +13,17 @@ import java.util.Objects;
  * @author Ahmed
  */
 public class Subject {
-    //INTE 22543
-    //first one year
-    //second semester 
-    // last credit
+    
     private String subjectCode;
     private ArrayList<Student> students;
-    private int enrolledYear;// this is the year students have enrolled for the course
+    private int yearWriting;// this is the year students have enrolled for the course
     private boolean isRepeat;
     private ClassRoom classroom;
 
+    private int offeredYear;
+    private int offeredSemester;
+    private Module module;
+    
     public ClassRoom getClassroom() {
         return classroom;
     }
@@ -33,7 +34,23 @@ public class Subject {
     
     public Subject(String subjectCode) {
         this.subjectCode = subjectCode;
+        
         isRepeat=false;
+    }
+    
+    public Subject(String subjectCode,int isRepeat){
+        this(subjectCode);
+        if(isRepeat==1){
+            this.isRepeat = true;
+        }
+    }
+    
+    public Subject(String subjectCode,int yearWriting,int offeredYear,int offeredSemester,int isRepeat){
+        this.subjectCode = subjectCode;
+        this.yearWriting = yearWriting;
+        this.offeredSemester = offeredSemester;
+        this.offeredYear = offeredYear;
+        this.isRepeat = isRepeat==1?true:false;
     }
     
     public Subject(String subjectCode,Boolean repeat){
@@ -58,12 +75,12 @@ public class Subject {
         this.students = students;
     }
 
-    public int getEnrolledYear() {
-        return enrolledYear;
+    public int getWritingYear() {
+        return yearWriting;
     }
 
-    public void setEnrolledYear(int year) {
-        this.enrolledYear = year;
+    public void setWritingYear(int year) {
+        this.yearWriting = year;
     }
     
     public boolean isIsRepeat() {
@@ -73,13 +90,23 @@ public class Subject {
     public void setIsRepeat(boolean isRepeat) {
         this.isRepeat = isRepeat;
     }
+
+    public Module getModule() {
+        return module;
+    }
+
+    public void setModule(Module module) {
+        this.module = module;
+    }
+    
+    
     
     public int getYear(){
-        return Integer.parseInt(subjectCode.charAt(0)+"");
+        return offeredYear;
     }
     
     public int getSemester(){
-        return Integer.parseInt(subjectCode.charAt(2)+"");
+        return offeredSemester;
     }
     
     public int getCredit(){
@@ -87,6 +114,9 @@ public class Subject {
     }
     
     public void addStudent(Student student){
+        if(students == null) {
+            students = new ArrayList<>();
+        }
         students.add(student);
     }
     
@@ -126,8 +156,30 @@ public class Subject {
         if (!Objects.equals(this.subjectCode, other.subjectCode)) {
             return false;
         }
+        if(offeredYear!=other.getYear()){
+            return false;
+        }
+        if(offeredSemester!=other.getSemester()){
+            return false;
+        }
+        if(yearWriting !=other.getWritingYear()){
+            return false;
+        }
+        if(other.isRepeat != this.isRepeat){
+            return false;
+        }
         return true;
     }
     
+    public boolean isSitting(Student std){
+        if(students.contains(std))return true;
+        else return false;
+                
+    }
+    
+    public Subject clone(){
+        Subject sbj = new Subject(subjectCode, yearWriting, offeredYear, offeredSemester, isRepeat?1:0);
+        return sbj;
+    }
     
 }
