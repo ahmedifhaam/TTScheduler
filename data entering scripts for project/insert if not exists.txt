@@ -1,0 +1,10 @@
+INSERT INTO `modules` ( `code`, `name`) select * from (SELECT "IMGTE 1234","Test") AS tmp WHERE NOT exists (SELECT `code` FROM `modules` where code="IMGTE 1234")Limit 1;
+
+INSERT INTO `modules` ( `code`, `name`) select * from (SELECT 'AMAT 11513','AMAT 11513') AS tmp WHERE NOT exists (SELECT `code` FROM `modules` where `code`='AMAT 11513')Limit 1;
+
+
+
+
+
+
+INSERT INTO `subjects` (`module_id`,`year`,`offered_year`,`offered_semester`,`is_repeat`)SELECT _id,"2013","3","2","0" from modules where code = "AMAT 11513" and "AMAT 11513" not in (select m.code from modules m LEFT join subjects s on m._id= s.module_id WHERE code = 'AMAT 11513' and s._id is not null)
